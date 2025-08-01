@@ -1,0 +1,75 @@
+# Idea: want to extract each word of concatenated words
+# Example: fromsender, not a real word: should be 'from' and 'sender'
+# implement dictionary API to find subsets of strings?
+
+# Stucture variables as key:value pairs?
+#   Then we can have dirpath, regex ... etc, in the var file
+
+import os
+import re
+import pandas as pd
+from typing import Pattern
+
+def get_train_directory():
+    dirpath = open("./var").read().strip()
+    print(dirpath)
+    return dirpath
+
+# Extract text contents from file
+def extract_data(filepath):
+    with open(filepath, "r", errors="ignore") as file:
+        return file.read().lower()
+
+# Do we want to include numbers? Possibly should be alphanumeric.
+# Validate tokens (is this the best version?)
+valid_chars1 = r"^[A-Za-z']+$" 
+stopwords = extract_data("./stopwords_nltk").split("\n")
+
+def charset_full_match(valid_chars_regex, token):
+    return True if re.fullmatch(valid_chars_regex, token) else False
+
+def charset_match(valid_chars_regex, token):
+    return True if re.match(valid_chars_regex, token) else False
+
+def print_portion(tokens, upper_percent, lower_percent, files_count):
+    lower_bound = lower_percent*files_count
+    upper_bound = upper_percent*files_count
+    for k,v in tokens.items():
+        if lower_bound <= v <= upper_bound:
+            print(k,v,f"{100*v/files_count}%")
+
+# V2, split lines, clean lines, split lines, validate tokens
+def parse_text(data: str, valid_chars_regex: Pattern) -> dict:
+    cleaned_tokens=[]
+    line = re.sub(r"\n", " ", data)
+    line = re.sub(r"[.,:\-!]","", line)
+    tokens = line.split(" ")
+    for token in tokens:
+        token = token.strip()
+        if charset_full_match(valid_chars_regex, token) and token not in stopwords:
+            cleaned_tokens.append(token)
+    return dict.fromkeys(cleaned_tokens, 1)
+
+def build_bag_of_words():
+    dirpath = get_train_directory()
+    bag_of_words = {}
+    files = os.listdir(dirpath)
+    files_count = len(files)
+    print(f"{dirpath} : {files_count}")
+
+    for filename in files:
+        filepath = os.path.join(dirpath, filename)
+        data = extract_data(filepath)
+        token_dict = parse_text(data, valid_chars1)
+        # Should we use 'keys()' or 'items()'?
+        for word in token_dict.keys():
+            bag_of_words[word] = bag_of_words.get(word, 0) + 1
+
+    print(f"{len(bag_of_words)} words in collection.")
+    return bag_of_words
+
+
+
+    
+
+        

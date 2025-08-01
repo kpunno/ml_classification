@@ -1,2 +1,4 @@
-bow-sets/
+__pycache__/
+data_sets/
 stopwords_nltk
+var
