@@ -4,6 +4,7 @@
 
 # TODO: Stucture variables as key:value pairs?
 #   Then we can have dirpath, regex ... etc, in the var file\
+#   Yes, this will need to be done, so I can have a variable for the training spam directory, training ham directory, and testing directory
 
 # TODO: Problematic because it is not generalized, has too much knowledge of external factors (ie. hardcoded things)
 
