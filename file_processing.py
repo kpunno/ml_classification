@@ -1,9 +1,11 @@
-# Idea: want to extract each word of concatenated words
+# TODO: Idea: want to extract each word of concatenated words
 # Example: fromsender, not a real word: should be 'from' and 'sender'
 # implement dictionary API to find subsets of strings?
 
-# Stucture variables as key:value pairs?
-#   Then we can have dirpath, regex ... etc, in the var file
+# TODO: Stucture variables as key:value pairs?
+#   Then we can have dirpath, regex ... etc, in the var file\
+
+# TODO: Problematic because it is not generalized, has too much knowledge of external factors (ie. hardcoded things)
 
 import os
 import re
@@ -12,32 +14,48 @@ from typing import Pattern
 
 def get_train_directory():
     dirpath = open("./var").read().strip()
-    print(dirpath)
     return dirpath
 
+def get_files_list():
+    dir = get_train_directory()
+    return os.listdir(dir)
+
+def get_files_count():
+    return len(get_files_list())
+
 # Extract text contents from file
-def extract_data(filepath):
+def get_data(filepath):
     with open(filepath, "r", errors="ignore") as file:
         return file.read().lower()
 
 # Do we want to include numbers? Possibly should be alphanumeric.
 # Validate tokens (is this the best version?)
 valid_chars1 = r"^[A-Za-z']+$" 
-stopwords = extract_data("./stopwords_nltk").split("\n")
+stopwords = get_data("./stopwords_nltk").split("\n")
 
+# regex full matching
 def charset_full_match(valid_chars_regex, token):
     return True if re.fullmatch(valid_chars_regex, token) else False
 
+# regex partial matching
 def charset_match(valid_chars_regex, token):
     return True if re.match(valid_chars_regex, token) else False
 
-def print_portion(tokens, upper_percent, lower_percent, files_count):
-    lower_bound = lower_percent*files_count
-    upper_bound = upper_percent*files_count
-    for k,v in tokens.items():
-        if lower_bound <= v <= upper_bound:
-            print(k,v,f"{100*v/files_count}%")
+# print a portion that appears under and over a certain percentage
+def print_portion(tokens : dict, files_count : int, lower_bound_percent : int, upper_bound_percent : int):
+    print("index ".rjust(10), " word".ljust(40), "count".center(10),"percent".center(10),sep="|")
+    print("-"*100)
+    index=1
+    total=1
+    for word,count in tokens.items():
+        rate = count/files_count
+        if lower_bound_percent <= rate <= upper_bound_percent:
+            print(f"{str(index)} ".rjust(10),f" {word}".ljust(40),str(count).center(10),f"{100*count/files_count}%".center(10), sep="|")
+            total+=1
+        index+=1
+    print(f"{total} items appear within {lower_bound_percent*100}% and {upper_bound_percent*100}% of files.")
 
+# parse text file, return organized tokens
 # V2, split lines, clean lines, split lines, validate tokens
 def parse_text(data: str, valid_chars_regex: Pattern) -> dict:
     cleaned_tokens=[]
@@ -50,6 +68,7 @@ def parse_text(data: str, valid_chars_regex: Pattern) -> dict:
             cleaned_tokens.append(token)
     return dict.fromkeys(cleaned_tokens, 1)
 
+# build bag of words from scratch
 def build_bag_of_words():
     dirpath = get_train_directory()
     bag_of_words = {}
@@ -59,7 +78,7 @@ def build_bag_of_words():
 
     for filename in files:
         filepath = os.path.join(dirpath, filename)
-        data = extract_data(filepath)
+        data = get_data(filepath)
         token_dict = parse_text(data, valid_chars1)
         # Should we use 'keys()' or 'items()'?
         for word in token_dict.keys():
