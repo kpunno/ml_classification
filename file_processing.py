@@ -10,19 +10,18 @@
 
 import os
 import re
-import pandas as pd
 from typing import Pattern
 
-def get_train_directory():
-    dirpath = open("./var").read().strip()
-    return dirpath
+def get_directory(dirtype : str) -> str:
+    dirpath = open(f"./var").read().strip()
+    return f"{dirpath}{dirtype}"
 
-def get_files_list():
-    dir = get_train_directory()
+def get_files_list(dirtype : str) -> list:
+    dir = get_directory(dirtype)
     return os.listdir(dir)
 
-def get_files_count():
-    return len(get_files_list())
+def get_files_count(dirtype : str) -> int:
+    return len(get_files_list(dirtype))
 
 # Extract text contents from file
 def get_data(filepath):
@@ -70,9 +69,9 @@ def parse_text(data: str, valid_chars_regex: Pattern) -> dict:
     return dict.fromkeys(cleaned_tokens, 1)
 
 # build bag of words from scratch
-def build_bag_of_words():
-    dirpath = get_train_directory()
-    bag_of_words = {}
+def build_dictionary(dirtype : str) -> dict:
+    dirpath = get_directory(dirtype)
+    dict = {}
     files = os.listdir(dirpath)
     files_count = len(files)
     print(f"{dirpath} : {files_count}")
@@ -83,10 +82,10 @@ def build_bag_of_words():
         token_dict = parse_text(data, valid_chars1)
         # Should we use 'keys()' or 'items()'?
         for word in token_dict.keys():
-            bag_of_words[word] = bag_of_words.get(word, 0) + 1
+            dict[word] = dict.get(word, 0) + 1
 
-    print(f"{len(bag_of_words)} words in collection.")
-    return bag_of_words
+    print(f"{len(dict)} words in collection.")
+    return dict
 
 
 
