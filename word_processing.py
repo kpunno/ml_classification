@@ -3,7 +3,10 @@
 # e.g., remove words having a count of 1
 
 def remove_words_above_threshold_count(bag : dict, threshold : int) -> dict:
-    return 0
+    bag_out={}
+    for word in bag:
+        print(bag.get(word)[1])
+        print(bag.get(word)[2])
 
 def remove_words_below_threshold_count(bag: dict, threshold : int) -> dict:
     return 0

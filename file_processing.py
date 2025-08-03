@@ -8,6 +8,9 @@
 
 # TODO: Problematic because it is not generalized, has too much knowledge of external factors (ie. hardcoded things)
 
+UPPER_THRESHOLD = 0.95
+LOWER_THRESHOLD = 0.05
+
 import os
 import re
 from typing import Pattern
@@ -71,6 +74,7 @@ def parse_text(data: str, valid_chars_regex: Pattern) -> dict:
 # build bag of words from scratch
 def build_dictionary(dirtype : str) -> dict:
     dirpath = get_directory(dirtype)
+    files_count = get_files_count(dirtype)
     dict = {}
     files = os.listdir(dirpath)
     files_count = len(files)
@@ -83,9 +87,17 @@ def build_dictionary(dirtype : str) -> dict:
         # Should we use 'keys()' or 'items()'?
         for word in token_dict.keys():
             dict[word] = dict.get(word, 0) + 1
+    
+    upper_count = files_count * UPPER_THRESHOLD
+    lower_count = files_count * LOWER_THRESHOLD
+
+    restricted_dict = {}
+    for word, count in dict.items():
+        if upper_count >= count >= lower_count:
+            restricted_dict[word] = count
 
     print(f"{len(dict)} words in collection.")
-    return dict
+    return restricted_dict
 
 
 
