@@ -8,12 +8,12 @@
 
 # TODO: Problematic because it is not generalized, has too much knowledge of external factors (ie. hardcoded things)
 
-UPPER_THRESHOLD = 0.95
-LOWER_THRESHOLD = 0.05
-
 import os
 import re
 from typing import Pattern
+
+p_w_upper_bound =0.90
+p_w_lower_bound =0.05
 
 def get_directory(dirtype : str) -> str:
     dirpath = open(f"./var").read().strip()
@@ -75,29 +75,31 @@ def parse_text(data: str, valid_chars_regex: Pattern) -> dict:
 def build_dictionary(dirtype : str) -> dict:
     dirpath = get_directory(dirtype)
     files_count = get_files_count(dirtype)
-    dict = {}
     files = os.listdir(dirpath)
     files_count = len(files)
     print(f"{dirpath} : {files_count}")
 
+    dict_counts = {}
     for filename in files:
         filepath = os.path.join(dirpath, filename)
         data = get_data(filepath)
         token_dict = parse_text(data, valid_chars1)
         # Should we use 'keys()' or 'items()'?
         for word in token_dict.keys():
-            dict[word] = dict.get(word, 0) + 1
-    
-    upper_count = files_count * UPPER_THRESHOLD
-    lower_count = files_count * LOWER_THRESHOLD
+            dict_counts[word] = dict_counts.get(word, 0) + 1
 
-    restricted_dict = {}
-    for word, count in dict.items():
-        if upper_count >= count >= lower_count:
-            restricted_dict[word] = count
+    dict_probabilities = {}
+    # type_char = f"p_w|{dirtype[:1]}"
+    type_char = "p_w"
+    for word, count in dict_counts.items():
+        p_w = count/files_count
+        ## Ignore words above, below given probability
+        if p_w_upper_bound >= p_w >= p_w_lower_bound:
+            dict_probabilities[word] = {"count": count, type_char: p_w}
+        
 
-    print(f"{len(dict)} words in collection.")
-    return restricted_dict
+    print(f"{len(dict_probabilities)} words in collection.")
+    return dict_probabilities
 
 
 
