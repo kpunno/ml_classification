@@ -15,7 +15,7 @@ import re
 from typing import Pattern
 
 class Train:
-    def __init__(self, directory : str, valid_chars : Pattern = r"^[A-Za-z']+$", stopwords_dir : str = "./stopwords_nltk", p_w_upper_bound : int = 1, p_w_lower_bound : int = 0):
+    def __init__(self, directory : str, valid_chars : Pattern = r"^[A-Za-z']+$", stopwords_dir : str = "./stopwords_nltk", p_w_upper_bound : int = 1, p_w_lower_bound : int = 0, build : bool = True):
         self.directory = directory
         self.stopwords = self.read_file(stopwords_dir).split("\n")
         # Do we want to include numbers? Possibly should be alphanumeric.
@@ -26,25 +26,14 @@ class Train:
 
         self.files_list = os.listdir(self.directory)
 
-        self.build()
+        if build:
+            self.build()
 
     def get_directory(self) -> str:
         return self.directory
 
     def get_files_list(self) -> list:
         return self.files_list
-
-    """
-    # Extract text contents from email
-    def get_email_contents(self, filepath):
-        subject = ""
-        with open(filepath, "r", errors="ignore") as file:
-            line = ""
-            while (line := file.readline()) not in ("\n", ""):
-                if "subject" in line.lower():
-                    subject = line
-            return f"{subject} {file.read().lower()}"
-    """
             
     def read_file(self, filepath):
         with open(filepath, "r", errors="ignore") as file:
