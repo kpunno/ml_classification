@@ -8,33 +8,45 @@
 
 # TODO: Problematic because it is not generalized, has too much knowledge of external factors (ie. hardcoded things)
 
+# TODO: Pass your own lambda to build to define a different way of parsing or something
+
 import os
 import re
 from typing import Pattern
 
-class FileProcessor:
-    def __init__(self, dirtype, valid_chars=r"^[A-Za-z']+$", stopwords_dir="./stopwords_nltk", p_w_upper_bound=0.95, p_w_lower_bound=0.05):
-        self.p_w_upper_bound = p_w_upper_bound
-        self.p_w_lower_bound = p_w_lower_bound
-        self.dirtype = dirtype
-        self.stopwords = self.get_data(stopwords_dir).split("\n")
+class Train:
+    def __init__(self, directory : str, valid_chars : Pattern = r"^[A-Za-z']+$", stopwords_dir : str = "./stopwords_nltk", p_w_upper_bound : int = 1, p_w_lower_bound : int = 0):
+        self.directory = directory
+        self.stopwords = self.read_file(stopwords_dir).split("\n")
         # Do we want to include numbers? Possibly should be alphanumeric.
         # Validate tokens (is this the best version?)
         self.valid_chars = valid_chars
+        self.p_w_upper_bound = p_w_upper_bound
+        self.p_w_lower_bound = p_w_lower_bound
+
+        self.files_list = os.listdir(self.directory)
+
+        self.build()
 
     def get_directory(self) -> str:
-        dirpath = open(f"./var").read().strip()
-        return f"{dirpath}{self.dirtype}"
+        return self.directory
 
     def get_files_list(self) -> list:
-        dir = self.get_directory()
-        return os.listdir(dir)
+        return self.files_list
 
-    def get_files_count(self) -> int:
-        return len(self.get_files_list())
-
-    # Extract text contents from file
-    def get_data(self, filepath):
+    """
+    # Extract text contents from email
+    def get_email_contents(self, filepath):
+        subject = ""
+        with open(filepath, "r", errors="ignore") as file:
+            line = ""
+            while (line := file.readline()) not in ("\n", ""):
+                if "subject" in line.lower():
+                    subject = line
+            return f"{subject} {file.read().lower()}"
+    """
+            
+    def read_file(self, filepath):
         with open(filepath, "r", errors="ignore") as file:
             return file.read().lower()
 
@@ -75,16 +87,16 @@ class FileProcessor:
         return dict.fromkeys(cleaned_tokens, 1)
 
     # build bag of words from scratch
-    def build_dictionary(self) -> dict:
+    def build(self) -> dict:
         dirpath = self.get_directory()
         files = self.get_files_list()
         files_count = len(files)
-        print(f"{dirpath} : {files_count}")
+        print(f"Building from {dirpath}, with {files_count} files.")
 
         dict_counts = {}
         for filename in files:
             filepath = os.path.join(dirpath, filename)
-            data = self.get_data(filepath)
+            data = self.read_file(filepath)
             token_dict = self.parse_text(data)
             # Should we use 'keys()' or 'items()'?
             for word in token_dict.keys():
@@ -101,7 +113,7 @@ class FileProcessor:
         
 
         print(f"{len(dict_probabilities)} words in collection.")
-        return dict_probabilities
+        self.bag_of_words = dict_probabilities
 
 
 
