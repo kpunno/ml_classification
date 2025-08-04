@@ -13,31 +13,29 @@ class Test:
     def classify_file(self):
         return 0
     
-    def classify_directory(self):
-        directories = os.listdir(self.directory)
-        print(directories)
-        """
-        for each dir in directories:
-            open directory ...
-            ...
-            
-        """
+    def predict(self):
+        prior = self.prior
         results = {}
-        path = os.path.join(self.directory, "spam")
+        path = self.directory
         for file in os.listdir(path):
             filepath = os.path.join(path, file)
             with open(filepath, "r", errors="ignore") as f:
                 data = f.read()
                 lines = re.sub("\n", " ", data)
                 tokens = lines.split(" ")
-                prb= math.log(self.prior)
+                eta = prior
                 for token in tokens:
                     found = self.bag_of_words.get(token)
                     if found is not None:
-                        prb += math.log(found['p_w'])
-                results[file] = math.exp(prb)
-        for result, probability in results.items():
-            print(result, probability)
+                        # WTF is this?
+                        p = found['p_w']
+                        p = max(p, 1e-10)
+                        eta += math.log((1 - p) / p) if p not in (0, 1) else 0
+                # WTF is this?
+                eta = max(min(eta, 700), -700)
+                results[file] = 1 / (1+math.exp(eta))
+        
+        return results
                 
                 
         
