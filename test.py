@@ -25,14 +25,10 @@ class Test:
                 tokens = lines.split(" ")
                 eta = prior
                 for token in tokens:
-                    found = self.bag_of_words.get(token)
-                    if found is not None:
-                        # WTF is this?
-                        p = found['p_w']
-                        p = max(p, 1e-10)
+                    p = self.bag_of_words.get(token)
+                    if p is not None:
                         eta += math.log((1 - p) / p) if p not in (0, 1) else 0
-                # WTF is this?
-                eta = max(min(eta, 700), -700)
+                # Convert sum of log odds to probabilities
                 results[file] = 1 / (1+math.exp(eta))
         
         return results

@@ -104,6 +104,21 @@ class Train:
         print(f"{len(dict_probabilities)} words in collection.")
         self.bag_of_words = dict_probabilities
 
+    def combine(self, spam : "Train", ham : "Train") -> dict:
+        spam_bag = spam.bag_of_words
+        ham_bag  = ham.bag_of_words
+
+        combined_bag_of_words = {}
+        for word in spam_bag:
+            spam_values = spam_bag.get(word, {})
+            ham_values  = ham_bag.get(word, {})
+            p_spam_given_word = spam_values.get('p_w', 0) / (spam_values.get('p_w', 0) + ham_values.get('p_w', 0))
+            combined_bag_of_words[word] = p_spam_given_word
+        return combined_bag_of_words
+
+
+
+
 
 
     
